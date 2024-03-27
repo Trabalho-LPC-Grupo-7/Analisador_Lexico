@@ -45,6 +45,7 @@ import javax.swing.text.Highlighter;
  */
 public class TelaCompilar extends JFrame {
    
+    
     JMenuBar jmBarra = new JMenuBar();
     JMenu jmFile = new JMenu("File");
     JMenu jmEdit = new JMenu("Edit");
@@ -73,6 +74,8 @@ public class TelaCompilar extends JFrame {
     Font f1= new Font("Calibre", Font.BOLD,18);
     Font f3= new Font("Calibre", Font.BOLD,13);
     
+    JPanel jpOutPut = new JPanel(new BorderLayout());
+    JLabel jlOutPut = new JLabel("");
     //area
     private JTextArea jtaCodigoFonte;
     private JTextArea linesTextArea;
@@ -80,7 +83,7 @@ public class TelaCompilar extends JFrame {
     public TelaCompilar(){
         setLayout(null);
         
-        setSize(1200, 600);
+        setSize(1200, 640);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setTitle("Analisador Lexico");
         setLocationRelativeTo(null);
@@ -113,7 +116,6 @@ public class TelaCompilar extends JFrame {
         jmOpcoes.add(jmiOPcoes);
         jmAjuda.add(jmiAjuda);
         
-        
         jpCodigo.setBounds(5, 10, 1175, 350);
         jpCodigo.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         
@@ -129,14 +131,6 @@ public class TelaCompilar extends JFrame {
         jpTabela.setBounds(5, 400, 1175, 130);
         
         jpLabel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        
-        //jtTabela.setSize(1160, 120);
-        //jpTabela.add(jtTabela);
-        
-        //tabela e modelo
-        
-       
-        
         
         this.add(jpLabel);
         
@@ -162,9 +156,15 @@ public class TelaCompilar extends JFrame {
 
         // Adicionando o painel principal ao frame
         add(jpTabela);
-
-        //
         
+         //OUtput
+        jpOutPut.setBounds(10, 530, 1163, 40);
+        jpOutPut.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY), "OUTPUT"));
+        jlOutPut.setHorizontalTextPosition((int) LEFT_ALIGNMENT);
+        jlOutPut.setVerticalTextPosition((int) CENTER_ALIGNMENT);
+        jlOutPut.setFont(f3);
+        jpOutPut.add(jlOutPut);
+        this.add(jpOutPut);
         
         //area
         
@@ -230,6 +230,7 @@ public class TelaCompilar extends JFrame {
         
         //
         
+        
     }
     
     private void updateLineNumbers() {
@@ -249,6 +250,7 @@ public class TelaCompilar extends JFrame {
         tabela.setRowCount(0);
         //crindo arrayList para receber os dados passados por parametro
         ArrayList<Token> dados = dado;
+        int erro=0;
         
         //preenchendo a tabela com os simbolos e seus estados (existe(simbolo) ou nao existe(error))
         for(int i=0; i<dados.size(); i++){
@@ -259,8 +261,10 @@ public class TelaCompilar extends JFrame {
             
             if(dados.get(i).getEstado().equals("ERRO")){
                 pintarPalavra(dados.get(i).getToken());
+                erro=1;
             }
         }
+        outPut(dados.size(), erro);
     }
     
     public void accaoCompilar() throws BadLocationException{
@@ -275,6 +279,35 @@ public class TelaCompilar extends JFrame {
         
        AnalisadorLexico al = new AnalisadorLexico();
        preencherTabela(al.verificarCaractere(codigoFonte));
+    }
+    
+    public void outPut(int array, int erro){
+        String sucesso = "SUCCESSFUL";
+        String failed = "FAILED";
+        
+//        long tempoInicial = System.currentTimeMillis();
+//        long segundosDecorridos = 0;
+        
+        long tempoInicial = System.currentTimeMillis();
+        long segundosDecorridos = 0;
+        int milissegundosDecorridos = 0;
+
+        while (jtTabela.getRowCount()!=array) {
+            long tempoAtual = System.currentTimeMillis();
+            segundosDecorridos = (tempoAtual - tempoInicial) / 1000;
+            milissegundosDecorridos = (int) ((tempoAtual - tempoInicial) % 1000);
+        }
+        
+        if(erro==1){
+            jlOutPut.setForeground(Color.red);
+            jlOutPut.setText("BUILD "+ failed + " (total time: "+segundosDecorridos+" seconds : "+ 
+               milissegundosDecorridos+" milissegundos)");
+        }else{
+            jlOutPut.setForeground(Color.GREEN);
+            jlOutPut.setText("BUILD "+ sucesso + " (total time: "+segundosDecorridos+" seconds : "+ 
+               milissegundosDecorridos+" milissegundos)");
+        }
+       
     }
     
     public void pintarPalavra(String palavra) {
