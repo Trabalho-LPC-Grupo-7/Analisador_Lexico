@@ -144,6 +144,7 @@ public class TelaCompilar extends JFrame {
       
         int jpTabelaH = (int) (frameSize.height * 0.3) ;
         jpTabela.setBounds(5, jpCodigoH + jpLabelH + 10, frameSize.width-10, jpTabelaH);
+        jpTabela.setBackground(Color.DARK_GRAY);
         
         jpLabel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         
@@ -161,6 +162,8 @@ public class TelaCompilar extends JFrame {
         modelo.addColumn("TOKEN");
         
         jtTabela.setFillsViewportHeight(true);
+        jtTabela.setBackground(Color.DARK_GRAY);
+        jtTabela.setForeground(Color.WHITE);
 
         // Adicionando a tabela a um JScrollPane
         JScrollPane scrollPaneTabela = new JScrollPane(jtTabela);
@@ -279,6 +282,7 @@ public class TelaCompilar extends JFrame {
         tabela.setRowCount(0);
         jtTabela.setFont(f2);
         jtTabela.setRowHeight(25);
+        
         //crindo arrayList para receber os dados passados por parametro
         ArrayList<Token> dados = dado;
         
