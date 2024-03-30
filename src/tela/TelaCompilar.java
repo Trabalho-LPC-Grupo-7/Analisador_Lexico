@@ -9,6 +9,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import static java.awt.Toolkit.getDefaultToolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
@@ -71,14 +72,20 @@ public class TelaCompilar extends JFrame {
     DefaultTableModel modelo= new DefaultTableModel();
     JTable jtTabela = new JTable(modelo);
     
-    Font f1= new Font("Calibre", Font.BOLD,18);
-    Font f3= new Font("Calibre", Font.BOLD,13);
+    Font f1= new Font("Monospaced", Font.BOLD,20);
+    Font f2= new Font("Calibre", Font.BOLD,15);
+    Font f3= new Font("Calibre", Font.BOLD,15);
     
     JPanel jpOutPut = new JPanel(new BorderLayout());
     JLabel jlOutPut = new JLabel("");
     //area
     private JTextArea jtaCodigoFonte;
     private JTextArea linesTextArea;
+    
+    long tempoInicial;
+    long tempoFinal;
+    int milissegundosDecorridos;
+    int erro=0;
     
     public TelaCompilar(){
         setLayout(null);
@@ -87,6 +94,8 @@ public class TelaCompilar extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setTitle("Analisador Lexico");
         setLocationRelativeTo(null);
+        getContentPane().setBackground(Color.DARK_GRAY);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setVisible(true);
         
         
@@ -116,19 +125,25 @@ public class TelaCompilar extends JFrame {
         jmOpcoes.add(jmiOPcoes);
         jmAjuda.add(jmiAjuda);
         
-        jpCodigo.setBounds(5, 10, 1175, 350);
+        //pegando tamanho da tela
+        Dimension frameSize =getContentPane().getSize();
+        
+        int jpCodigoH = (int) (frameSize.height * 0.55) ;
+        jpCodigo.setBounds(5, 10, frameSize.width-10, jpCodigoH);
         jpCodigo.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         
         //componentes abaixo
-        jpLabel.setBounds(5, 365, 1175, 30);
+        int jpLabelH = (int) (frameSize.height * 0.05) ;
+        jpLabel.setBounds(5, jpCodigoH+10, frameSize.width-10, jpLabelH);
         jpLabel.setBackground(Color.WHITE);
         jpLabel.add(jlSaida);
         
-        jlSaida.setSize(1175,25);
+        jlSaida.setSize(1175,30);
+        jlSaida.setFont(f3);
         jlSaida.setHorizontalAlignment((int) CENTER_ALIGNMENT);
       
-        
-        jpTabela.setBounds(5, 400, 1175, 130);
+        int jpTabelaH = (int) (frameSize.height * 0.3) ;
+        jpTabela.setBounds(5, jpCodigoH + jpLabelH + 10, frameSize.width-10, jpTabelaH);
         
         jpLabel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         
@@ -136,16 +151,15 @@ public class TelaCompilar extends JFrame {
         
         //tabela
         
-            jpTabela.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            jpTabela.setBorder(BorderFactory.createEtchedBorder());
             // Dados para a tabela
 
         // Cabeçalhos das colunas
-        String[] colunas = {"LINHA", "LEXEMA", "TOKEN"};
-
         // Criando a tabela
         modelo.addColumn("LINHA");
         modelo.addColumn("LEXEMA");
         modelo.addColumn("TOKEN");
+        
         jtTabela.setFillsViewportHeight(true);
 
         // Adicionando a tabela a um JScrollPane
@@ -158,7 +172,8 @@ public class TelaCompilar extends JFrame {
         add(jpTabela);
         
          //OUtput
-        jpOutPut.setBounds(10, 530, 1163, 40);
+        int jpOutPutH = (int) (frameSize.height * 0.07) ;
+        jpOutPut.setBounds(5, jpCodigoH + jpLabelH + jpTabelaH +10, frameSize.width-10, jpOutPutH);
         jpOutPut.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY), "OUTPUT"));
         jlOutPut.setHorizontalTextPosition((int) LEFT_ALIGNMENT);
         jlOutPut.setVerticalTextPosition((int) CENTER_ALIGNMENT);
@@ -220,11 +235,25 @@ public class TelaCompilar extends JFrame {
         jmiCompilar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                String mensagem;
                 try {
+                    tempoInicial = System.currentTimeMillis();
                     accaoCompilar();
+                    
                 } catch (BadLocationException ex) {
                     Logger.getLogger(TelaCompilar.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                if(erro==1){
+                        jlOutPut.setForeground(Color.red);
+                        mensagem="FAILED";
+                    }else{
+                        jlOutPut.setForeground(Color.GREEN);
+                        mensagem="SUCCESSFUL";
+                    }
+                tempoFinal = System.currentTimeMillis();
+                 milissegundosDecorridos = (int) ((tempoFinal - tempoInicial) % 1000);
+                jlOutPut.setText("BUILD "+ mensagem + " (total time: "+ 
+                            milissegundosDecorridos+" milissegundos)");
             }
         });
         
@@ -248,9 +277,10 @@ public class TelaCompilar extends JFrame {
         //criando a tabela
         DefaultTableModel tabela = (DefaultTableModel)jtTabela.getModel();
         tabela.setRowCount(0);
+        jtTabela.setFont(f2);
+        jtTabela.setRowHeight(25);
         //crindo arrayList para receber os dados passados por parametro
         ArrayList<Token> dados = dado;
-        int erro=0;
         
         //preenchendo a tabela com os simbolos e seus estados (existe(simbolo) ou nao existe(error))
         for(int i=0; i<dados.size(); i++){
@@ -264,7 +294,6 @@ public class TelaCompilar extends JFrame {
                 erro=1;
             }
         }
-        outPut(dados.size(), erro);
     }
     
     public void accaoCompilar() throws BadLocationException{
@@ -281,34 +310,6 @@ public class TelaCompilar extends JFrame {
        preencherTabela(al.verificarCaractere(codigoFonte));
     }
     
-    public void outPut(int array, int erro){
-        String sucesso = "SUCCESSFUL";
-        String failed = "FAILED";
-        
-//        long tempoInicial = System.currentTimeMillis();
-//        long segundosDecorridos = 0;
-        
-        long tempoInicial = System.currentTimeMillis();
-        long segundosDecorridos = 0;
-        int milissegundosDecorridos = 0;
-
-        while (jtTabela.getRowCount()!=array) {
-            long tempoAtual = System.currentTimeMillis();
-            segundosDecorridos = (tempoAtual - tempoInicial) / 1000;
-            milissegundosDecorridos = (int) ((tempoAtual - tempoInicial) % 1000);
-        }
-        
-        if(erro==1){
-            jlOutPut.setForeground(Color.red);
-            jlOutPut.setText("BUILD "+ failed + " (total time: "+segundosDecorridos+" seconds : "+ 
-               milissegundosDecorridos+" milissegundos)");
-        }else{
-            jlOutPut.setForeground(Color.GREEN);
-            jlOutPut.setText("BUILD "+ sucesso + " (total time: "+segundosDecorridos+" seconds : "+ 
-               milissegundosDecorridos+" milissegundos)");
-        }
-       
-    }
     
     public void pintarPalavra(String palavra) {
         try {

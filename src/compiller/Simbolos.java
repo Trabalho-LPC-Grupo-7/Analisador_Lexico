@@ -81,15 +81,15 @@ public class Simbolos {
      
      //metodo para verificar as palavras chave
      public String existenciaClasse(String palavra){
-         if(specialSymbol.contains(palavra)){
+         if(specialSymbol.contains(palavra.toLowerCase())){
              return "SPECIAL SYMBOL";
-         }else if(relational_operator.contains(palavra)){
+         }else if(relational_operator.contains(palavra.toLowerCase())){
              return "RELATIONAL OPERATOR";
-         }else if(adding_operator.contains(palavra)){
+         }else if(adding_operator.contains(palavra.toLowerCase())){
              return "ADDING OPERATOR";
-         }else if(multiplying_operator.contains(palavra)){
+         }else if(multiplying_operator.contains(palavra.toLowerCase())){
              return "MULTIPLYING OPERATOR";
-         }else if(letter.contains(String.valueOf(palavra.charAt(0)))){
+         }else if(letter.contains(String.valueOf(palavra.charAt(0)).toLowerCase())){
              return VerificarIdentificador(palavra);
          }else if((palavra.charAt(0)=='"' && palavra.charAt(palavra.length()-1)=='"') || 
                  String.valueOf(palavra.charAt(0)).equals("'") && 
